@@ -1,0 +1,44 @@
+/**
+ *   轮播图的样式结构
+ */
+
+.container {  /* 包裹层可以自己改 */
+  width: 1280px;
+  height: 800px;
+  margin: 0 auto;
+  padding-top: 100px;
+  background-color: black;
+  position: relative;
+  text-align: center;
+}
+
+.carousel-wrap {
+  perspective: 400px;
+  width: 200px;
+  height: 400px;
+  margin: 0 auto;
+  margin-bottom: 40px;
+  position: relative;
+}
+.carousel-item {
+  position: absolute;
+  left: 0;
+  width: 200px;
+  transition: all .5s;
+}
+.carousel-left {
+  display: inline-block;
+  color: #fff;
+  width: 64px;
+  height: 64px;
+  background: url('../images/left.png') no-repeat;  /* 箭头图标可自己改 */
+  padding: 0 50px;
+  background-size: 64px;
+}
+.carousel-right {
+  display: inline-block;
+  width: 64px;
+  height: 64px;
+  background: url('../images/right.png') no-repeat; /* 箭头图标可自己改 */
+  background-size: 64px;
+}
