@@ -2,7 +2,7 @@
  *   轮播图的样式结构
  */
 
-.container {  /* 包裹层可以自己改 */
+.carousel-container {  /* 包裹层可以自己改 */
   width: 1280px;
   height: 800px;
   margin: 0 auto;

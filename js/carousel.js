@@ -319,3 +319,5 @@
     return element;
   }
  }
+
+ export default carousel
