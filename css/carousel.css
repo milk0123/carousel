@@ -24,6 +24,7 @@
   position: absolute;
   left: 0;
   width: 200px;
+  cursor: pointer;
   transition: all .5s;
 }
 .carousel-left {
@@ -32,8 +33,8 @@
   width: 64px;
   height: 64px;
   background: url('../images/left.png') no-repeat;  /* 箭头图标可自己改 */
-  padding: 0 50px;
   background-size: 64px;
+  margin-right: 50px;
 }
 .carousel-right {
   display: inline-block;
@@ -41,4 +42,16 @@
   height: 64px;
   background: url('../images/right.png') no-repeat; /* 箭头图标可自己改 */
   background-size: 64px;
+}
+
+.carousel-mark {
+  width: 100%;
+  height: 100%;
+  background-color:rgba(0, 0, 0, .8);
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
 }

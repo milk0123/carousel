@@ -7,36 +7,64 @@
   carouselItem: null,       // 轮播的每个元素
   leftBtn: null,            // 左按钮
   rightBtn: null,           // 右按钮
+  carouselMark: null,       // 蒙版
+  markImg: null,            // 蒙版图片
+  opacities: null,          // 轮播元素的透明度
+  zIndex: null,             // 每个元素的z-index
+  difX: 100,                // 每个元素的translateX 的差值
+  difZ: 40,                 // 每个元素的translateZ 的差值
   canNextAni: true,         // 下一次动画是否允许执行
   nextAniTime: 200,         // 前后动画的间隔时间
+  isAutoPlay: true,         // 是否自动播放(默认自动播放)
+  autoPlayTime: 2000,       // 自动轮播的间隔时间
+  animationId: null,        // 自动轮播的动画 id,
+  isMarkShow: false,        // 蒙版是否显示(默认没显示)
 
   // 方法
-  init: function(itemClassName, leftClassName, rightClassName) {
+  init: function(itemClassName, leftClassName, rightClassName, markClassName, markImgClassName) {
     /**
      *  初始化公共属性，轮播图 和 绑定元素事件
-     *  @param {String} itemClassName - 轮播图元素的类名
-     *  @param {String} leftClassName - 左按钮元素的类名
-     *  @param {String} rightClassName - 右按钮元素的类名
+     *  @param {String} itemClassName    - 轮播图元素的类名
+     *  @param {String} leftClassName    - 左按钮元素的类名
+     *  @param {String} rightClassName   - 右按钮元素的类名
+     *  @param {String} markClassName    - 蒙版元素的类名
+     *  @param {String} markImgClassName - 蒙版图片的类名
      */
 
     // 检测类名是否传入
     var itemClassName = itemClassName || '';
     var leftClassName = leftClassName || '';
     var rightClassName = rightClassName || '';
-    if (!itemClassName && !leftClassName && !rightClassName) {
+    var markClassName = markClassName || '';
+    var markImgClassName = markImgClassName || '';
+    if (!itemClassName && 
+        !leftClassName && 
+        !rightClassName && 
+        !markClassName && 
+        !markImgClassName) {
       return '初始化失败,请传入参数';
     }
 
     // 初始化公共属性
     this.carouselItem = this.getCarouselItem(itemClassName);
-    this.leftBtn = this.getBtn(leftClassName);
-    this.rightBtn = this.getBtn(rightClassName);
+    this.leftBtn = this.getElement(leftClassName);
+    this.rightBtn = this.getElement(rightClassName);
+    this.carouselMark = this.getElement(markClassName);
+    this.markImg = this.getElement(markImgClassName);
+    this.opacities = [0.1,0.4, 0.8, 1, 0.8, 0.4, 0.2];
+    this.zIndex = [-3,-2,-1,1,-1,-2,-3];
 
     // 初始化轮播图
     this.initCarousel();
+    
+    // 是否自动播放轮播图
+    if (this.isAutoPlay) {
+      this.autoPlay();
+    }
 
     // 绑定元素事件
-    this.bandEvent();
+    this.bindEvent();
+
   },
   initCarousel: function() {
     /**
@@ -44,10 +72,10 @@
      */
     var items = this.carouselItem;                    // 轮播图的元素对象
     var middle = Math.floor(items.length / 2);        // 轮播元素的中间元素
-    var opacities = [0.1,0.4, 0.8, 1, 0.8, 0.4, 0.2]; // 轮播元素的透明度
-    var zIndex = [-3,-2,-1,1,-1,-2,-3];               // 设定每个元素的z-index
-    var difX = 100;                                   // 每个元素的 x 的差值
-    var difZ = 40;                                    // 每个元素的 z 的差值
+    var opacities = this.opacities;                   // 轮播元素的透明度
+    var zIndex = this.zIndex;                         // 设定每个元素的z-index
+    var difX = this.difX;                             // 每个元素的 x 的差值
+    var difZ = this.difZ;                             // 每个元素的 z 的差值
     var middleX = 0;                                  // 元素相差的dif 个数
     // 中间元素初始化
     items[middle].style['z-index'] = zIndex[middle];
@@ -70,29 +98,69 @@
     }
 
   },
-  bandEvent: function() {
+  bindEvent: function() {
     /**
      *  绑定元素的事件，集中绑定
      */
-    var _this = this;         // 绑定 this
+    var _this = this;                                       // 绑定 this
 
-    this.leftBtn.addEventListener('click', function() {
-      _this.toMove('left');   // 绑定左按钮事件
+    this.leftBtn.addEventListener('click', function() {     // 绑定左按钮点击事件
+      _this.toMove('left');
     }, false);
 
-    this.rightBtn.addEventListener('click', function() {
-      _this.toMove('right');  // 绑定右按钮事件
+    this.leftBtn.addEventListener('mouseover', function() { // 绑定左按钮滑入事件
+      clearInterval(_this.animationId);                     // 取消自动播放
+    }, false);
+
+    this.leftBtn.addEventListener('mouseout', function() { // 绑定左按钮滑出事件
+      _this.autoPlay()                                     // 取消自动播放
+    }, false);
+
+    this.rightBtn.addEventListener('mouseover', function() {// 绑定右按钮滑入事件
+      clearInterval(_this.animationId);                     // 取消自动播放
+    }, false);
+
+    this.rightBtn.addEventListener('mouseout', function() {// 绑定右按钮滑出事件
+      _this.autoPlay()                                     // 取消自动播放
+    }, false);
+
+    this.rightBtn.addEventListener('click', function() {    // 绑定右按钮点击事件
+      _this.toMove('right');
     }, false);
 
     for (var i = 0, items = this.carouselItem; i < items.length; i++) {
-      items[i].addEventListener('click', function() {
+      items[i].addEventListener('click', function() {       // 绑定元素点击事件
         _this.clickSwitch(this);
-      }, false);
+      }, false);             
     }
+    
+    for (var i = 0, items = this.carouselItem; i < items.length; i++) {
+      items[i].addEventListener('mouseover', function() {   // 绑定元素滑入事件事件
+        clearInterval(_this.animationId);                   // 取消自动播放
+      }, false);             
+    }
+
+    for (var i = 0, items = this.carouselItem; i < items.length; i++) {
+      items[i].addEventListener('mouseout', function() {    // 绑定元素滑出事件
+        if (!_this.isMarkShow) {                            // 蒙版未显示时移出自动播放
+          _this.autoPlay()                                  // 自动播放
+        }
+      }, false);             
+    }
+
+    this.carouselMark.addEventListener('click', function() {// 蒙版的点击事件
+      _this.isMarkShow = false;                             // 清除元素滑出事件的限制
+      _this.autoPlay();                                     // 自动轮播
+      this.style.display = 'none';                          // 隐藏蒙版
+    }, false);
+
+    this.markImg.addEventListener('click', function(e){     // 蒙版图片的点击事件
+      e.stopPropagation();                                  // 阻止事件冒泡
+    }, false);
   },
   clickSwitch: function(_this) {
     /**
-     *  元素点击切换轮播图
+     *  元素点击切换轮播图或放大当前项
      *  @param {Object} _this - 当前点击项的this
      */
     var items = this.carouselItem;                          // 轮播图总元素
@@ -105,6 +173,23 @@
         this.toMove(moveD, moveT);
       }
     }
+    else {                                                  // 点击项时活动项时图片放大
+      this.isMarkShow = true;                               // 限制元素的 mouseout 事件的触发
+      clearInterval(this.animationId);                      // 取消自动播放
+      var url = _this.getAttribute('src');                  // 获取图片地址
+      this.markImg.setAttribute('src', url);                // 设置蒙版图片地址为当前图片地址
+      this.carouselMark.style.display = 'flex';             // 显示蒙版
+    }
+  },
+  autoPlay: function() {
+    /**
+     *  自动播放轮播图
+     */
+    var moveD = 'right';                                    // 默认方向是向右
+    var moveT = 1;                                          // 轮播次数一次
+    this.animationId = setInterval(() => {                  // 自动轮播
+      this.toMove(moveD, moveT);
+    }, this.autoPlayTime)
   },
   toMove:function(dir, totle) {
     /**
@@ -119,10 +204,10 @@
     this.canNextAni = false;                          // 限制下一次动画的执行
     var totle = totle || 1;                           // 默认轮播一次啊
     var items = this.carouselItem;                    // 轮播图的元素对象
-    var opacities = [0.1,0.4, 0.8, 1, 0.8, 0.4, 0.2]; // 轮播元素的透明度
-    var zIndex = [-3,-2,-1,1,-1,-2,-3];               // 设定每个元素的z-index
-    var difX = 100;                                   // 每个元素的 x 的差值
-    var difZ = 40;                                    // 每个元素的 z 的差值
+    var opacities = this.opacities;                   // 轮播元素的透明度
+    var zIndex = this.zIndex;                         // 设定每个元素的z-index
+    var difX = this.difX;                                   // 每个元素的 x 的差值
+    var difZ = this.difZ;                                    // 每个元素的 z 的差值
     var reg = /-?\d+/g;                               // 正则匹配
     var messageArr = null;                            // 元素的 style 信息
     var formatNum = {                                 // 根据方向格式化数值
@@ -219,9 +304,9 @@
 
     return items;
   },
-  getBtn: function(className) {
+  getElement: function(className) {
     /**
-     *  获取按钮元素
+     *  获取元素
      *  @param {String} className - 元素类名
      *  @return {Object} - 包含元素的对象
      */
@@ -229,8 +314,8 @@
     if (!className) {
       return null;
     }
-    var btn = document.getElementsByClassName(className)[0];
+    var element = document.getElementsByClassName(className)[0];
     
-    return btn;
+    return element;
   }
  }
