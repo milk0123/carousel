@@ -320,3 +320,6 @@
     return element;
   }
  }
+
+// 需要模块化的请将注释去掉
+//  export default carousel 
