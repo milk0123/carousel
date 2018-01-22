@@ -174,6 +174,7 @@
       }
     }
     else {                                                  // 点击项时活动项时图片放大
+      clearInterval(this.animationId);                      // 每次进来都清除一次
       this.isMarkShow = true;                               // 限制元素的 mouseout 事件的触发
       clearInterval(this.animationId);                      // 取消自动播放
       var url = _this.getAttribute('src');                  // 获取图片地址
@@ -319,5 +320,3 @@
     return element;
   }
  }
-
- export default carousel
